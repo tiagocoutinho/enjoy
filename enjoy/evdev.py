@@ -12,43 +12,7 @@ import fcntl
 import ctypes
 import struct
 
-from . import enums
-
-
-class timeval(ctypes.Structure):
-    _fields_ = [
-        ("tv_sec", ctypes.c_long),
-        ("tv_usec", ctypes.c_long)
-    ]
-
-
-class input_event(ctypes.Structure):
-    _fields_ = [
-        ('time', timeval),
-        ('type', ctypes.c_uint16),
-        ('code', ctypes.c_uint16),
-        ('value', ctypes.c_int32),
-    ]
-
-
-class input_id(ctypes.Structure):
-    _fields_ = [
-        ('bustype', ctypes.c_uint16),
-        ('vendor', ctypes.c_uint16),
-        ('product', ctypes.c_uint16),
-        ('version', ctypes.c_uint16),
-    ]
-
-
-class input_absinfo(ctypes.Structure):
-    _fields_ = [
-        ('value', ctypes.c_int32),
-        ('minimum', ctypes.c_int32),
-        ('maximum', ctypes.c_int32),
-        ('fuzz', ctypes.c_int32),
-        ('flat', ctypes.c_int32),
-        ('resolution', ctypes.c_int32),
-    ]
+from ._evdev import *
 
 # --------------------------------------------------------------------------
 #                       Linux ioctl numbers made easy
@@ -113,10 +77,10 @@ EVIOCGNAME = _IOR(EVDEV_MAGIC, 0x06, _S_BUFF)
 EVIOCGPHYS = _IOR(EVDEV_MAGIC, 0x07, _S_BUFF)
 EVIOCGUNIQ = _IOR(EVDEV_MAGIC, 0x08, _S_BUFF)
 #EVIOCGPROP = _IOR(EVDEV_MAGIC, 0x09, )
-EVIOCGKEY = _IOR(EVDEV_MAGIC, 0x18, (enums.Key.KEY_MAX.value+7)//8)
-EVIOCGLED = _IOR(EVDEV_MAGIC, 0x19, (enums.Led.LED_MAX.value+7)//8)
-EVIOCGSND = _IOR(EVDEV_MAGIC, 0x1a, (enums.Sound.SND_MAX.value+7)//8)
-EVIOCGSW = _IOR(EVDEV_MAGIC, 0x1b, (enums.Switch.SW_MAX.value+7)//8)
+EVIOCGKEY = _IOR(EVDEV_MAGIC, 0x18, (Key.KEY_MAX.value+7)//8)
+EVIOCGLED = _IOR(EVDEV_MAGIC, 0x19, (Led.LED_MAX.value+7)//8)
+EVIOCGSND = _IOR(EVDEV_MAGIC, 0x1a, (Sound.SND_MAX.value+7)//8)
+EVIOCGSW = _IOR(EVDEV_MAGIC, 0x1b, (Switch.SW_MAX.value+7)//8)
 
 
 def version(fd):
@@ -154,28 +118,28 @@ def _test_bit(mask, bit):
 
 
 def keys(fd):
-    max = enums.Key.KEY_MAX.value
+    max = Key.KEY_MAX.value
     result = ctypes.create_string_buffer((max+7)//8)
     fcntl.ioctl(fd, EVIOCGKEY, result)
     return [bit for bit in range(max) if _test_bit(result, bit)]
 
 
 def leds(fd):
-    max = enums.Led.LED_MAX.value
+    max = Led.LED_MAX.value
     result = ctypes.create_string_buffer((max+7)//8)
     fcntl.ioctl(fd, EVIOCGLED, result)
     return [bit for bit in range(max) if _test_bit(result, bit)]
 
 
 def sounds(fd):
-    max = enums.Sound.SND_MAX.value
+    max = Sound.SND_MAX.value
     result = ctypes.create_string_buffer((max+7)//8)
     fcntl.ioctl(fd, EVIOCGSND, result)
     return [bit for bit in range(max) if _test_bit(result, bit)]
 
 
 def switches(fd):
-    max = enums.Switch.SW_MAX.value
+    max = Switch.SW_MAX.value
     result = ctypes.create_string_buffer((max+7)//8)
     fcntl.ioctl(fd, EVIOCGSW, result)
     return [bit for bit in range(max) if _test_bit(result, bit)]
