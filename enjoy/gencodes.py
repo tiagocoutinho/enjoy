@@ -53,9 +53,32 @@ TEMPLATE = '''\
 
 import enum
 import ctypes
+import collections
+
+
+def struct_repr(self):
+    name = type(self).__name__
+    fields = ', '.join(('{{}}={{}}'.format(field[0], getattr(self, field[0]))
+                        for field in self._fields_))
+    return '{{}}({{}})'.format(name, fields)
+
+
+def struct_asdict(self):
+    r = collections.OrderedDict()
+    for field_name, _ in self._fields_:
+        r[field_name] = getattr(self, field_name)
+    return r
+
+
+def struct_iter(self):
+    for fname, _ in self._fields_:
+        yield getattr(self, fname)
 
 
 {enums_body}
+
+
+{event_type_map}
 
 
 {structs_body}'''
@@ -84,6 +107,8 @@ def fill_enums(filename, enums, hole):
     for item in gen_reader(filename):
         name, value = item['name'], item['value']
         if '_' not in name:
+            continue
+        if name == 'EV_VERSION':
             continue
         group, key = name.split('_', 1)
         if group not in MACRO_MAP:
@@ -178,7 +203,10 @@ STRUCT_TEMPLATE = '''\
 class {name}(ctypes.{type}):
 {unions}    _fields_ = [
 {fields}
-    ]'''
+    ]
+    __iter__ = struct_iter
+    __repr__ = struct_repr
+    asdict = struct_asdict'''
 
 
 def field_str(field):
@@ -193,7 +221,7 @@ def field_str(field):
         union_str = '\n'.join(['    {}'.format(line)
                                for line in union_str.split('\n')])
         field_type = field_type['name']
-    return ('''        ('{name}', {type}),'''.format(name=name, type=field_type),
+    return ('''        ('{name}', {type})'''.format(name=name, type=field_type),
             union_str)
 
 
@@ -207,7 +235,7 @@ def struct_str(struct):
     ctype = 'Structure' if struct['type'] == 'Struct' else 'Union'
     return STRUCT_TEMPLATE.format(name=struct['name'],
                                   type=ctype,
-                                  fields='\n'.join(fields),
+                                  fields=',\n'.join(fields),
                                   unions='\n\n'.join(unions) + ('\n' if unions else ''))
 
 
@@ -243,9 +271,19 @@ def main():
     enums_body = enums_str(enums)
     structs_body = structs_str(structs)
 
+    ev_type_items = [name.split('_', 1)[1]
+                     for name in dict(enums['EventType'])]
+    ev_map = []
+    for ev_type in dict(enums['EventType']):
+        name = ev_type.split('_', 1)[1]
+        if name in MACRO_MAP:
+            ev_map.append('    EventType.{}: {}'.format(ev_type, MACRO_MAP[name]))
+    ev_map = '''EVENT_TYPE_MAP = {{\n{map}\n}}'''.format(map=',\n'.join(ev_map))
+
     print(TEMPLATE.format(version=uname,
                           date=datetime.datetime.now(),
                           enums_body=enums_body,
+                          event_type_map=ev_map,
                           structs_body=structs_body))
 
 
