@@ -2,8 +2,8 @@
 #
 # This file is part of the enjoy project
 #
-# Copyright (c) 2018 Tiago Coutinho
-# Distributed under the MIT. See LICENSE for more info.
+# Copyright (c) 2021 Tiago Coutinho
+# Distributed under the GPLv3 license. See LICENSE for more info.
 
 from __future__ import division
 from __future__ import print_function
@@ -415,6 +415,9 @@ class InputDevice(object):
 
     def fileno(self):
         return self._fileobj.fileno()
+
+    def open(self):
+        self._fileobj.open()
 
     def close(self):
         self._fileobj.close()

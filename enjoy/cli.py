@@ -1,10 +1,16 @@
+#
+# This file is part of the enjoy project
+#
+# Copyright (c) 2021 Tiago Coutinho
+# Distributed under the GPLv3 license. See LICENSE for more info.
+
 import shutil
 import asyncio
 
 import typer
 import beautifultable
 
-from enjoy.input import InputDevice, EventType, Absolute, list_devices, async_event_stream
+from enjoy.input import InputDevice, EventType, list_devices, async_event_stream
 
 
 app = typer.Typer()
