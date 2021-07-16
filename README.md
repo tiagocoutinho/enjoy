@@ -9,9 +9,9 @@ Pure python, concurrency agnostic, access to linux input system. Useful for cont
 
 ```
 $ python -m enjoy.cli table
-+------------------------------------------------+--------------------+-------------------------+
-|        Sony PLAYSTATION(R)3 Controller         | /dev/input/event26 | SYN, KEY, ABS, MSC, FF  |
-+------------------------------------------------+--------------------+-------------------------+
++---------------------------------+--------------------+-------------------------+
+| Sony PLAYSTATION(R)3 Controller | /dev/input/event26 | SYN, KEY, ABS, MSC, FF  |
++---------------------------------+--------------------+-------------------------+
 ...
 
 
