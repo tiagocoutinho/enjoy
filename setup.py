@@ -44,6 +44,6 @@ setup(
         "Documentation": "https://github.com/tiagocoutinho/enjoy",
         "Source": "https://github.com/tiagocoutinho/enjoy",
     },
-    version="version='0.1.0'",
+    version="0.1.0",
     zip_safe=True,
 )
