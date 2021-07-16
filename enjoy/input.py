@@ -18,7 +18,6 @@ import select
 import struct
 import asyncio
 
-from . import _input
 from ._input import *
 
 # --------------------------------------------------------------------------
@@ -343,7 +342,7 @@ class InputFile(object):
         return os.write(self._fd, data)
 
 
-class _Type(object):
+class _Type:
 
     _event_type = None
 
@@ -370,7 +369,11 @@ class _Abs(_Type):
         return self.device.get_abs_info(code).value
 
     def __getattr__(self, key):
-        return self[Absolute['ABS_' + key.upper()]]
+        name = 'ABS_' + key.upper()
+        try:
+            return self[Absolute[name]]
+        except KeyError:
+            return super().__getattr__(key)
 
     def __dir__(self):
         return [k.name[4:].lower() for k in self.device.capabilities[self._event_type]]
@@ -388,7 +391,10 @@ class _Keys(_Type):
         return code in self.device.active_keys
 
     def __getattr__(self, name):
-        return self[Key[name.upper()]]
+        try:
+            return self[Key[name.upper()]]
+        except KeyError:
+            return super().__getattr__(name)
 
 
 class InputDevice(object):
@@ -513,7 +519,6 @@ def find_keyboards():
 
 
 def main():
-    import os
     import sys
     with InputDevice(sys.argv[1]) as dev:
         print('version:', version(dev))
