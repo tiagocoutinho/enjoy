@@ -271,8 +271,6 @@ def main():
     enums_body = enums_str(enums)
     structs_body = structs_str(structs)
 
-    ev_type_items = [name.split('_', 1)[1]
-                     for name in dict(enums['EventType'])]
     ev_map = []
     for ev_type in dict(enums['EventType']):
         name = ev_type.split('_', 1)[1]

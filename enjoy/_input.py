@@ -887,7 +887,7 @@ class input_mask(ctypes.Structure):
     _fields_ = [
         ('type', ctypes.c_uint),
         ('codes_size', ctypes.c_uint),
-        ('codes_ptr', ctypes.c_uint64)
+        ('codes_ptr', ctypes.c_void_p)
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
