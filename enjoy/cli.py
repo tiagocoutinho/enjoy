@@ -4,14 +4,13 @@
 # Copyright (c) 2021 Tiago Coutinho
 # Distributed under the GPLv3 license. See LICENSE for more info.
 
-import shutil
 import asyncio
+import shutil
 
-import typer
 import beautifultable
+import typer
 
-from enjoy.input import InputDevice, EventType, list_devices, async_event_stream
-
+from enjoy.input import EventType, InputDevice, async_event_stream, list_devices
 
 app = typer.Typer()
 
@@ -44,9 +43,9 @@ def create_state(dev):
 def create_state_template(state):
     template = []
     if "abs" in state:
-        if "X" in state['abs']:
+        if "X" in state["abs"]:
             template.append("X: {abs[X]} Y:{abs[Y]} Z:{abs[Z]}")
-        if "RX" in state['abs']:
+        if "RX" in state["abs"]:
             template.append("RX: {abs[RX]} RY:{abs[RY]} RZ:{abs[RZ]}")
     if "keys" in state:
         template.append("{pressed}")
@@ -67,6 +66,7 @@ def table():
 @app.command()
 def listen(path: str):
     CLEAR_LINE = "\r\x1b[0K"
+
     async def event_loop():
         async for event in async_event_stream(device.fileno()):
             if event.type == EventType.EV_KEY:

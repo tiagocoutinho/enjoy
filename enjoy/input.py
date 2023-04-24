@@ -5,18 +5,17 @@
 # Copyright (c) 2021 Tiago Coutinho
 # Distributed under the GPLv3 license. See LICENSE for more info.
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
-import os
-import enum
-import glob
-import stat
-import fcntl
-import ctypes
-import select
-import struct
 import asyncio
+import ctypes
+import enum
+import fcntl
+import glob
+import os
+import select
+import stat
+import struct
 
 from ._input import *
 
@@ -92,32 +91,32 @@ def _enum_bit_size(enu):
 
 
 class input_mt_request_layout:
-    __slots__ = ('code', 'values')
+    __slots__ = ("code", "values")
 
     def __init__(self, code, values):
         self.code = code
         self.values = values
 
 
-EVDEV_MAGIC = ord(b'E')
+EVDEV_MAGIC = ord(b"E")
 
 _S_BUFF = 512
 
 EVIOCGVERSION = _IOR(EVDEV_MAGIC, 0x01, int_size)
 EVIOCGID = _IOR(EVDEV_MAGIC, 0x02, ctypes.sizeof(input_id))
-EVIOCGREP = _IOR(EVDEV_MAGIC, 0x03, 2*ctypes.sizeof(ctypes.c_uint))
+EVIOCGREP = _IOR(EVDEV_MAGIC, 0x03, 2 * ctypes.sizeof(ctypes.c_uint))
 EVIOCGNAME = _IOR(EVDEV_MAGIC, 0x06, _S_BUFF)
 EVIOCGPHYS = _IOR(EVDEV_MAGIC, 0x07, _S_BUFF)
 EVIOCGUNIQ = _IOR(EVDEV_MAGIC, 0x08, _S_BUFF)
-#EVIOCGPROP = _IOR(EVDEV_MAGIC, 0x09, _S_BUFF)
+# EVIOCGPROP = _IOR(EVDEV_MAGIC, 0x09, _S_BUFF)
 EVIOCGKEY = _IOR(EVDEV_MAGIC, 0x18, _enum_bit_size(Key))
 EVIOCGLED = _IOR(EVDEV_MAGIC, 0x19, _enum_bit_size(Led))
-EVIOCGSND = _IOR(EVDEV_MAGIC, 0x1a, _enum_bit_size(Sound))
-EVIOCGSW = _IOR(EVDEV_MAGIC, 0x1b, _enum_bit_size(Switch))
+EVIOCGSND = _IOR(EVDEV_MAGIC, 0x1A, _enum_bit_size(Sound))
+EVIOCGSW = _IOR(EVDEV_MAGIC, 0x1B, _enum_bit_size(Switch))
 
 
 def EVIOCGMTSLOTS(nb_slots):
-    return _IOR(EVDEV_MAGIC, 0x0a, (nb_slots+1) * ctypes.sizeof(ctypes.c_int32))
+    return _IOR(EVDEV_MAGIC, 0x0A, (nb_slots + 1) * ctypes.sizeof(ctypes.c_int32))
 
 
 def EVIOCGBIT(event_type_value, size):
@@ -125,8 +124,7 @@ def EVIOCGBIT(event_type_value, size):
 
 
 def EVIOCGABS(abs_type_value):
-    return _IOR(EVDEV_MAGIC, 0x40 + abs_type_value,
-                ctypes.sizeof(input_absinfo))
+    return _IOR(EVDEV_MAGIC, 0x40 + abs_type_value, ctypes.sizeof(input_absinfo))
 
 
 def EVIOCSABS(abs_type_value):
@@ -180,7 +178,7 @@ def uid(fd):
 
 
 def _bit(array, bit):
-    return ord(array[bit//8]) & (1 << (bit % 8))
+    return ord(array[bit // 8]) & (1 << (bit % 8))
 
 
 def _active(fd, code, dtype):
@@ -221,7 +219,7 @@ def available_event_types(fd):
 def event_type_capabilities(fd, event_type):
     if event_type == EventType.EV_SYN:
         # cannot query EventType.EV_SYN so just return all possibilities
-        return list(Synchronization)[:-1] # remove SYN_MAX
+        return list(Synchronization)[:-1]  # remove SYN_MAX
     elif event_type == EventType.EV_REP:
         # nothing in particular to report
         return []
@@ -233,24 +231,26 @@ def event_type_capabilities(fd, event_type):
 
 
 def auto_repeat_settings(fd):
-    result = (ctypes.c_uint*2)()
+    result = (ctypes.c_uint * 2)()
     fcntl.ioctl(fd, EVIOCGREP, result)
     return {rep: result[rep] for rep in AutoRepeat}
 
 
 def capabilities(fd):
     event_types = available_event_types(fd)
-    return { event_type: event_type_capabilities(fd, event_type)
-             for event_type in event_types }
+    return {
+        event_type: event_type_capabilities(fd, event_type)
+        for event_type in event_types
+    }
 
 
-def capabilities_str(caps, indent=''):
+def capabilities_str(caps, indent=""):
     lines = []
-    sub_indent = indent if indent else '  '
+    sub_indent = indent if indent else "  "
     for cap, values in caps.items():
-        lines.append('{}{}:'.format(indent, cap.name))
-        lines.extend((2*sub_indent + value.name for value in values))
-    return '\n'.join(lines)
+        lines.append("{}{}:".format(indent, cap.name))
+        lines.extend((2 * sub_indent + value.name for value in values))
+    return "\n".join(lines)
 
 
 def get_input_mask(fd, event_type):
@@ -272,14 +272,14 @@ def read_event(fd, read=os.read):
     return input_event.from_buffer_copy(data)
 
 
-def list_devices(base_dir='/dev/input'):
-    '''List readable character devices in ``input_device_dir``.'''
-    fns = glob.glob('{}/event*'.format(base_dir))
+def list_devices(base_dir="/dev/input"):
+    """List readable character devices in ``input_device_dir``."""
+    fns = glob.glob("{}/event*".format(base_dir))
     return list(filter(is_device, fns))
 
 
 def is_device(fn):
-    '''Check if ``fn`` is a readable and writable character device.'''
+    """Check if ``fn`` is a readable and writable character device."""
 
     if not os.path.exists(fn):
         return False
@@ -295,30 +295,38 @@ def is_device(fn):
 
 
 def _build_struct_type(struct, funcs=None):
-    name = ''.join(map(str.capitalize, struct.__name__.split('_')))
+    name = "".join(map(str.capitalize, struct.__name__.split("_")))
     field_names = [f[0] for f in struct._fields_]
     klass = collections.namedtuple(name, field_names)
     if funcs is None:
         funcs = {}
-    _identity = lambda o, v: v
+
+    def _identity(o, v):
+        return v
+
     def from_struct(s):
-        fields = {name: funcs.get(name, _identity)(s, getattr(s, name))
-                  for name in field_names}
+        fields = {
+            name: funcs.get(name, _identity)(s, getattr(s, name))
+            for name in field_names
+        }
         return klass(**fields)
+
     klass.from_struct = from_struct
     return klass
 
 
-InputId = _build_struct_type(input_id,
-                               dict(bustype=lambda o, v: Bus(v)))
-InputEvent = _build_struct_type(input_event,
-                                dict(time=lambda o, t: t.tv_sec + (t.tv_usec)*1e-6,
-                                     type=lambda o, t: EventType(t),
-                                     code=lambda o, c: EVENT_TYPE_MAP[o.type](c)))
+InputId = _build_struct_type(input_id, {"bustype": lambda o, v: Bus(v)})
+InputEvent = _build_struct_type(
+    input_event,
+    {
+        "time": lambda o, t: t.tv_sec + (t.tv_usec) * 1e-6,
+        "type": lambda o, t: EventType(t),
+        "code": lambda o, c: EVENT_TYPE_MAP[o.type](c),
+    },
+)
 
 
 class InputFile(object):
-
     def __init__(self, path):
         self.path = path
         self._fd = None
@@ -343,7 +351,6 @@ class InputFile(object):
 
 
 class _Type:
-
     _event_type = None
 
     def __init__(self, device=None):
@@ -352,16 +359,15 @@ class _Type:
     def __get__(self, obj, type=None):
         if self._event_type not in obj.capabilities:
             name = EVENT_TYPE_MAP[self._event_type].__name__.lower()
-            raise ValueError('device has no {!r} capability'.format(name))
+            raise ValueError("device has no {!r} capability".format(name))
         return self.__class__(obj)
 
     def _check_code(self, code):
         if code not in self.device.capabilities[self._event_type]:
-            raise ValueError('device has no {!r} capability'.format(code.name))
+            raise ValueError("device has no {!r} capability".format(code.name))
 
 
 class _Abs(_Type):
-
     _event_type = EventType.EV_ABS
 
     def __getitem__(self, code):
@@ -369,7 +375,7 @@ class _Abs(_Type):
         return self.device.get_abs_info(code).value
 
     def __getattr__(self, key):
-        name = 'ABS_' + key.upper()
+        name = "ABS_" + key.upper()
         try:
             return self[Absolute[name]]
         except KeyError:
@@ -380,7 +386,6 @@ class _Abs(_Type):
 
 
 class _Keys(_Type):
-
     _event_type = EventType.EV_KEY
 
     def __dir__(self):
@@ -398,7 +403,6 @@ class _Keys(_Type):
 
 
 class InputDevice(object):
-
     absolute = _Abs()
     keys = _Keys()
 
@@ -508,7 +512,9 @@ def find_gamepads():
     for path in list_devices():
         with InputDevice(path) as dev:
             caps = dev.capabilities
-        if EventType.EV_ABS in caps and Key.BTN_GAMEPAD in caps.get(EventType.EV_KEY, ()):
+        if EventType.EV_ABS in caps and Key.BTN_GAMEPAD in caps.get(
+            EventType.EV_KEY, ()
+        ):
             yield dev
 
 
@@ -523,20 +529,23 @@ def find_keyboards():
 
 def main():
     import sys
+
     with InputDevice(sys.argv[1]) as dev:
-        print('version:', version(dev))
-        print('ID: bus={0.bustype} vendor={0.vendor} product={0.product} ' \
-              'version={0.version}'
-              .format(device_id(dev)))
-        print('name:', name(dev))
-        print('physical_location:', physical_location(dev))
-    #    print('UID:', uid(fd))
-        print('capabilities:\n{}'.format(capabilities_str(capabilities(dev),
-                                                          indent='  ')))
-        print('key state:', active_keys(dev))
+        print("version:", version(dev))
+        print(
+            "ID: bus={0.bustype} vendor={0.vendor} product={0.product} "
+            "version={0.version}".format(device_id(dev))
+        )
+        print("name:", name(dev))
+        print("physical_location:", physical_location(dev))
+        #    print('UID:', uid(fd))
+        print(
+            "capabilities:\n{}".format(capabilities_str(capabilities(dev), indent="  "))
+        )
+        print("key state:", active_keys(dev))
 
     return dev
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     dev = main()

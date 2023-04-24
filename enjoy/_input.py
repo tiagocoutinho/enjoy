@@ -9,16 +9,17 @@
 # Date: 2018-11-15 16:12:59.308313
 # Version: Linux 4.15.0-20-generic #21-Ubuntu SMP Tue Apr 24 06:16:15 UTC 2018 x86_64
 
-import enum
-import ctypes
 import collections
+import ctypes
+import enum
 
 
 def struct_repr(self):
     name = type(self).__name__
-    fields = ', '.join(('{}={}'.format(field[0], getattr(self, field[0]))
-                        for field in self._fields_))
-    return '{}({})'.format(name, fields)
+    fields = ", ".join(
+        ("{}={}".format(field[0], getattr(self, field[0])) for field in self._fields_)
+    )
+    return "{}({})".format(name, fields)
 
 
 def struct_asdict(self):
@@ -818,15 +819,12 @@ EVENT_TYPE_MAP = {
     EventType.EV_LED: Led,
     EventType.EV_SND: Sound,
     EventType.EV_REP: AutoRepeat,
-    EventType.EV_FF: ForceFeedback
+    EventType.EV_FF: ForceFeedback,
 }
 
 
 class timeval(ctypes.Structure):
-    _fields_ = [
-        ('tv_sec', ctypes.c_int64),
-        ('tv_usec', ctypes.c_int64)
-    ]
+    _fields_ = [("tv_sec", ctypes.c_int64), ("tv_usec", ctypes.c_int64)]
     __iter__ = struct_iter
     __repr__ = struct_repr
     asdict = struct_asdict
@@ -834,10 +832,10 @@ class timeval(ctypes.Structure):
 
 class input_event(ctypes.Structure):
     _fields_ = [
-        ('time', timeval),
-        ('type', ctypes.c_uint16),
-        ('code', ctypes.c_uint16),
-        ('value', ctypes.c_int)
+        ("time", timeval),
+        ("type", ctypes.c_uint16),
+        ("code", ctypes.c_uint16),
+        ("value", ctypes.c_int),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -846,10 +844,10 @@ class input_event(ctypes.Structure):
 
 class input_id(ctypes.Structure):
     _fields_ = [
-        ('bustype', ctypes.c_uint16),
-        ('vendor', ctypes.c_uint16),
-        ('product', ctypes.c_uint16),
-        ('version', ctypes.c_uint16)
+        ("bustype", ctypes.c_uint16),
+        ("vendor", ctypes.c_uint16),
+        ("product", ctypes.c_uint16),
+        ("version", ctypes.c_uint16),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -858,12 +856,12 @@ class input_id(ctypes.Structure):
 
 class input_absinfo(ctypes.Structure):
     _fields_ = [
-        ('value', ctypes.c_int),
-        ('minimum', ctypes.c_int),
-        ('maximum', ctypes.c_int),
-        ('fuzz', ctypes.c_int),
-        ('flat', ctypes.c_int),
-        ('resolution', ctypes.c_int)
+        ("value", ctypes.c_int),
+        ("minimum", ctypes.c_int),
+        ("maximum", ctypes.c_int),
+        ("fuzz", ctypes.c_int),
+        ("flat", ctypes.c_int),
+        ("resolution", ctypes.c_int),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -872,11 +870,11 @@ class input_absinfo(ctypes.Structure):
 
 class input_keymap_entry(ctypes.Structure):
     _fields_ = [
-        ('flags', ctypes.c_uint8),
-        ('len', ctypes.c_uint8),
-        ('index', ctypes.c_uint16),
-        ('keycode', ctypes.c_uint),
-        ('scancode', ctypes.c_uint8)
+        ("flags", ctypes.c_uint8),
+        ("len", ctypes.c_uint8),
+        ("index", ctypes.c_uint16),
+        ("keycode", ctypes.c_uint),
+        ("scancode", ctypes.c_uint8),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -885,9 +883,9 @@ class input_keymap_entry(ctypes.Structure):
 
 class input_mask(ctypes.Structure):
     _fields_ = [
-        ('type', ctypes.c_uint),
-        ('codes_size', ctypes.c_uint),
-        ('codes_ptr', ctypes.c_void_p)
+        ("type", ctypes.c_uint),
+        ("codes_size", ctypes.c_uint),
+        ("codes_ptr", ctypes.c_void_p),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -895,20 +893,14 @@ class input_mask(ctypes.Structure):
 
 
 class ff_replay(ctypes.Structure):
-    _fields_ = [
-        ('length', ctypes.c_uint16),
-        ('delay', ctypes.c_uint16)
-    ]
+    _fields_ = [("length", ctypes.c_uint16), ("delay", ctypes.c_uint16)]
     __iter__ = struct_iter
     __repr__ = struct_repr
     asdict = struct_asdict
 
 
 class ff_trigger(ctypes.Structure):
-    _fields_ = [
-        ('button', ctypes.c_uint16),
-        ('interval', ctypes.c_uint16)
-    ]
+    _fields_ = [("button", ctypes.c_uint16), ("interval", ctypes.c_uint16)]
     __iter__ = struct_iter
     __repr__ = struct_repr
     asdict = struct_asdict
@@ -916,10 +908,10 @@ class ff_trigger(ctypes.Structure):
 
 class ff_envelope(ctypes.Structure):
     _fields_ = [
-        ('attack_length', ctypes.c_uint16),
-        ('attack_level', ctypes.c_uint16),
-        ('fade_length', ctypes.c_uint16),
-        ('fade_level', ctypes.c_uint16)
+        ("attack_length", ctypes.c_uint16),
+        ("attack_level", ctypes.c_uint16),
+        ("fade_length", ctypes.c_uint16),
+        ("fade_level", ctypes.c_uint16),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -927,10 +919,7 @@ class ff_envelope(ctypes.Structure):
 
 
 class ff_constant_effect(ctypes.Structure):
-    _fields_ = [
-        ('level', ctypes.c_int16),
-        ('envelope', ff_envelope)
-    ]
+    _fields_ = [("level", ctypes.c_int16), ("envelope", ff_envelope)]
     __iter__ = struct_iter
     __repr__ = struct_repr
     asdict = struct_asdict
@@ -938,9 +927,9 @@ class ff_constant_effect(ctypes.Structure):
 
 class ff_ramp_effect(ctypes.Structure):
     _fields_ = [
-        ('start_level', ctypes.c_int16),
-        ('end_level', ctypes.c_int16),
-        ('envelope', ff_envelope)
+        ("start_level", ctypes.c_int16),
+        ("end_level", ctypes.c_int16),
+        ("envelope", ff_envelope),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -949,12 +938,12 @@ class ff_ramp_effect(ctypes.Structure):
 
 class ff_condition_effect(ctypes.Structure):
     _fields_ = [
-        ('right_saturation', ctypes.c_uint16),
-        ('left_saturation', ctypes.c_uint16),
-        ('right_coeff', ctypes.c_int16),
-        ('left_coeff', ctypes.c_int16),
-        ('deadband', ctypes.c_uint16),
-        ('center', ctypes.c_int16)
+        ("right_saturation", ctypes.c_uint16),
+        ("left_saturation", ctypes.c_uint16),
+        ("right_coeff", ctypes.c_int16),
+        ("left_coeff", ctypes.c_int16),
+        ("deadband", ctypes.c_uint16),
+        ("center", ctypes.c_int16),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -963,14 +952,14 @@ class ff_condition_effect(ctypes.Structure):
 
 class ff_periodic_effect(ctypes.Structure):
     _fields_ = [
-        ('waveform', ctypes.c_uint16),
-        ('period', ctypes.c_uint16),
-        ('magnitude', ctypes.c_int16),
-        ('offset', ctypes.c_int16),
-        ('phase', ctypes.c_uint16),
-        ('envelope', ff_envelope),
-        ('custom_len', ctypes.c_uint),
-        ('custom_data', ctypes.POINTER(ctypes.c_int16))
+        ("waveform", ctypes.c_uint16),
+        ("period", ctypes.c_uint16),
+        ("magnitude", ctypes.c_int16),
+        ("offset", ctypes.c_int16),
+        ("phase", ctypes.c_uint16),
+        ("envelope", ff_envelope),
+        ("custom_len", ctypes.c_uint),
+        ("custom_data", ctypes.POINTER(ctypes.c_int16)),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -979,8 +968,8 @@ class ff_periodic_effect(ctypes.Structure):
 
 class ff_rumble_effect(ctypes.Structure):
     _fields_ = [
-        ('strong_magnitude', ctypes.c_uint16),
-        ('weak_magnitude', ctypes.c_uint16)
+        ("strong_magnitude", ctypes.c_uint16),
+        ("weak_magnitude", ctypes.c_uint16),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
@@ -990,22 +979,23 @@ class ff_rumble_effect(ctypes.Structure):
 class ff_effect(ctypes.Structure):
     class U(ctypes.Union):
         _fields_ = [
-            ('constant', ff_constant_effect),
-            ('ramp', ff_ramp_effect),
-            ('periodic', ff_periodic_effect),
-            ('condition', ff_condition_effect),
-            ('rumble', ff_rumble_effect)
+            ("constant", ff_constant_effect),
+            ("ramp", ff_ramp_effect),
+            ("periodic", ff_periodic_effect),
+            ("condition", ff_condition_effect),
+            ("rumble", ff_rumble_effect),
         ]
         __iter__ = struct_iter
         __repr__ = struct_repr
         asdict = struct_asdict
+
     _fields_ = [
-        ('type', ctypes.c_uint16),
-        ('id', ctypes.c_int16),
-        ('direction', ctypes.c_uint16),
-        ('trigger', ff_trigger),
-        ('replay', ff_replay),
-        ('u', U)
+        ("type", ctypes.c_uint16),
+        ("id", ctypes.c_int16),
+        ("direction", ctypes.c_uint16),
+        ("trigger", ff_trigger),
+        ("replay", ff_replay),
+        ("u", U),
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr

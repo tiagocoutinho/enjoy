@@ -5,41 +5,41 @@
 # Copyright (c) 2021 Tiago Coutinho
 # Distributed under the MIT. See LICENSE for more info.
 
-'''
+"""
 Generate a Python extension module with the constants defined in linux/input.h.
-'''
+"""
 
 from __future__ import print_function
 
+import collections
+import datetime
 import os
 import re
 import sys
-import datetime
 import tempfile
-import collections
 
-MACRO_RE = re.compile(r'#define[ \t]+(?P<name>[\w]+)[ \t]+(?P<value>\w+)\s*')
+MACRO_RE = re.compile(r"#define[ \t]+(?P<name>[\w]+)[ \t]+(?P<value>\w+)\s*")
 
 MACRO_MAP = {
-    'KEY': 'Key',
-    'BTN': 'Key',
-    'REL': 'Relative',
-    'ABS': 'Absolute',
-    'ID': 'Id',
-    'EV': 'EventType',
-    'MSC': 'Miscelaneous',
-    'SYN': 'Synchronization',
-    'LED': 'Led',
-    'BUS': 'Bus',
-    'FF': 'ForceFeedback',
-    'UI_FF': 'UIForceFeedback',
-    'SND': 'Sound',
-    'SW': 'Switch',
-    'REP': 'AutoRepeat',
-    'MT': 'MultiTouch',
+    "KEY": "Key",
+    "BTN": "Key",
+    "REL": "Relative",
+    "ABS": "Absolute",
+    "ID": "Id",
+    "EV": "EventType",
+    "MSC": "Miscelaneous",
+    "SYN": "Synchronization",
+    "LED": "Led",
+    "BUS": "Bus",
+    "FF": "ForceFeedback",
+    "UI_FF": "UIForceFeedback",
+    "SND": "Sound",
+    "SW": "Switch",
+    "REP": "AutoRepeat",
+    "MT": "MultiTouch",
 }
 
-TEMPLATE = '''\
+TEMPLATE = """\
 # -*- coding: utf-8 -*-
 #
 # This file is part of the enjoy project
@@ -81,11 +81,11 @@ def struct_iter(self):
 {event_type_map}
 
 
-{structs_body}'''
+{structs_body}"""
 
 
 def gen_reader(filename):
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         for line in f:
             line = line.strip()
             expr = MACRO_RE.match(line)
@@ -105,12 +105,12 @@ def decode_value(value, default=None):
 
 def fill_enums(filename, enums, hole):
     for item in gen_reader(filename):
-        name, value = item['name'], item['value']
-        if '_' not in name:
+        name, value = item["name"], item["value"]
+        if "_" not in name:
             continue
-        if name == 'EV_VERSION':
+        if name == "EV_VERSION":
             continue
-        group, key = name.split('_', 1)
+        group, key = name.split("_", 1)
         if group not in MACRO_MAP:
             continue
         value = decode_value(value, hole.get(value))
@@ -118,143 +118,148 @@ def fill_enums(filename, enums, hole):
         hole[name] = value
 
 
-def enum_str(name, items, base='enum.Enum'):
-    lines = ['    {} = 0x{:X}'.format(k, v) for k, v in items]
-    lines.insert(0, 'class {name}({base}):'.format(name=name, base=base))
-    return '\n'.join(lines)
+def enum_str(name, items, base="enum.Enum"):
+    lines = ["    {} = 0x{:X}".format(k, v) for k, v in items]
+    lines.insert(0, "class {name}({base}):".format(name=name, base=base))
+    return "\n".join(lines)
 
 
-def gen_enum_str(enums, base='enum.IntEnum'):
+def gen_enum_str(enums, base="enum.IntEnum"):
     for name, items in enums.items():
         yield enum_str(name, items, base=base)
 
 
 def enums_str(enums):
-    return '\n\n\n'.join(gen_enum_str(enums))
+    return "\n\n\n".join(gen_enum_str(enums))
 
 
 CTYPES_MAP = {
-    'unsigned char': 'ctypes.c_uint8',
-    'signed char': 'ctypes.c_int8',
-    'char': 'ctypes.c_int8',
-    'short unsigned int': 'ctypes.c_uint16',
-    'short int': 'ctypes.c_int16',
-    'unsigned int': 'ctypes.c_uint',
-    'int': 'ctypes.c_int',
-    'long unsigned int': 'ctypes.c_uint64',
-    'long long unsigned int': 'ctypes.c_uint64',
-    'long int': 'ctypes.c_int64',
-    'long long int': 'ctypes.c_int64',
+    "unsigned char": "ctypes.c_uint8",
+    "signed char": "ctypes.c_int8",
+    "char": "ctypes.c_int8",
+    "short unsigned int": "ctypes.c_uint16",
+    "short int": "ctypes.c_int16",
+    "unsigned int": "ctypes.c_uint",
+    "int": "ctypes.c_int",
+    "long unsigned int": "ctypes.c_uint64",
+    "long long unsigned int": "ctypes.c_uint64",
+    "long int": "ctypes.c_int64",
+    "long long int": "ctypes.c_int64",
 }
 
 
 def find_xml_base_type(etree, type_id):
     while True:
         node = etree.find("*[@id='{}']".format(type_id))
-        if node.tag == 'Struct':
-            return node.get('name'), node.get('id')
-        elif node.tag == 'FundamentalType':
-            return CTYPES_MAP[node.get('name')], node.get('id')
-        elif node.tag == 'PointerType':
-            name, base_id = find_xml_base_type(etree, node.get('type'))
-            return 'ctypes.POINTER({})'.format(name), base_id
-        elif node.tag == 'Union':
-            return build_struct(etree, node), node.get('id')
-        type_id = node.get('type')
+        if node.tag == "Struct":
+            return node.get("name"), node.get("id")
+        elif node.tag == "FundamentalType":
+            return CTYPES_MAP[node.get("name")], node.get("id")
+        elif node.tag == "PointerType":
+            name, base_id = find_xml_base_type(etree, node.get("type"))
+            return "ctypes.POINTER({})".format(name), base_id
+        elif node.tag == "Union":
+            return build_struct(etree, node), node.get("id")
+        type_id = node.get("type")
 
 
 def build_field(etree, node):
-    type_code = node.get('type')
+    type_code = node.get("type")
     field_type, base_type_code = find_xml_base_type(etree, type_code)
-    return dict(name=node.get('name'),
-                type=field_type, type_code=base_type_code)
+    return {"name": node.get("name"), "type": field_type, "type_code": base_type_code}
 
 
 def build_struct(etree, node):
-    members = node.get('members').split()
-    fields = [etree.find("*[@id='{}']".format(member))
-              for member in members]
-    return dict(name=node.get('name'),
-                type=node.tag,
-                fields=[build_field(etree, field)
-                        for field in fields
-                        if field.tag != 'Union'])
+    members = node.get("members").split()
+    fields = [etree.find("*[@id='{}']".format(member)) for member in members]
+    return {
+        "name": node.get("name"),
+        "type": node.tag,
+        "fields": [
+            build_field(etree, field) for field in fields if field.tag != "Union"
+        ],
+    }
 
 
 def gen_structs(header_filename, xml_filename):
     import xml.etree.ElementTree
+
     etree = xml.etree.ElementTree.parse(xml_filename)
     header_tag = etree.find("File[@name='{}']".format(header_filename))
     if header_tag is None:
         return
-    header_id = header_tag.get('id')
+    header_id = header_tag.get("id")
     struct_nodes = etree.findall("Struct[@file='{}']".format(header_id))
     for struct_node in struct_nodes:
         struct = build_struct(etree, struct_node)
-        for field in struct['fields']:
-            type_code = field['type_code']
+        for field in struct["fields"]:
+            type_code = field["type_code"]
             type_node = etree.find("*[@id='{}']".format(type_code))
-            if type_node.tag == 'Struct' and type_node.get('file') != header_id:
+            if type_node.tag == "Struct" and type_node.get("file") != header_id:
                 yield build_struct(etree, type_node)
         yield struct
 
 
-STRUCT_TEMPLATE = '''\
+STRUCT_TEMPLATE = """\
 class {name}(ctypes.{type}):
 {unions}    _fields_ = [
 {fields}
     ]
     __iter__ = struct_iter
     __repr__ = struct_repr
-    asdict = struct_asdict'''
+    asdict = struct_asdict"""
 
 
 def field_str(field):
-    name = field['name']
-    field_type = field['type']
+    name = field["name"]
+    field_type = field["type"]
     if isinstance(field_type, str):
         union_str = None
     else:
-        assert field_type['name'] == ''
-        field_type['name'] = name.upper()
+        assert field_type["name"] == ""
+        field_type["name"] = name.upper()
         union_str = struct_str(field_type)
-        union_str = '\n'.join(['    {}'.format(line)
-                               for line in union_str.split('\n')])
-        field_type = field_type['name']
-    return ('''        ('{name}', {type})'''.format(name=name, type=field_type),
-            union_str)
+        union_str = "\n".join(["    {}".format(line) for line in union_str.split("\n")])
+        field_type = field_type["name"]
+    return (
+        """        ('{name}', {type})""".format(name=name, type=field_type),
+        union_str,
+    )
 
 
 def struct_str(struct):
     unions, fields = [], []
-    for field in struct['fields']:
+    for field in struct["fields"]:
         f_str, union = field_str(field)
         if union:
             unions.append(union)
         fields.append(f_str)
-    ctype = 'Structure' if struct['type'] == 'Struct' else 'Union'
-    return STRUCT_TEMPLATE.format(name=struct['name'],
-                                  type=ctype,
-                                  fields=',\n'.join(fields),
-                                  unions='\n\n'.join(unions) + ('\n' if unions else ''))
+    ctype = "Structure" if struct["type"] == "Struct" else "Union"
+    return STRUCT_TEMPLATE.format(
+        name=struct["name"],
+        type=ctype,
+        fields=",\n".join(fields),
+        unions="\n\n".join(unions) + ("\n" if unions else ""),
+    )
 
 
 def structs_str(structs):
-    return '\n\n\n'.join((struct_str(struct) for struct in structs))
+    return "\n\n\n".join((struct_str(struct) for struct in structs))
 
 
 def main():
     # Default header file locations
     headers = [
-        '/usr/include/linux/input.h',
-        '/usr/include/linux/input-event-codes.h',
+        "/usr/include/linux/input.h",
+        "/usr/include/linux/input-event-codes.h",
     ]
 
     if sys.argv[1:]:
         headers = sys.argv[1:]
 
-    uname = list(os.uname()); del uname[1]
-    uname = ' '.join(uname)
+    uname = list(os.uname())
+    del uname[1]
+    uname = " ".join(uname)
 
     temp_dir = tempfile.mkdtemp()
     enums = collections.defaultdict(list)
@@ -263,27 +268,30 @@ def main():
     for header in headers:
         fill_enums(header, enums, hole)
         base_header = os.path.split(os.path.splitext(header)[0])[1]
-        xml_filename = os.path.join(temp_dir, base_header + '.xml')
-        cmd = 'castxml --castxml-output=1.0.0 -o {} {}' \
-              .format(xml_filename, header)
+        xml_filename = os.path.join(temp_dir, base_header + ".xml")
+        cmd = "castxml --castxml-output=1.0.0 -o {} {}".format(xml_filename, header)
         assert os.system(cmd) == 0
         structs.extend(gen_structs(header, xml_filename))
     enums_body = enums_str(enums)
     structs_body = structs_str(structs)
 
     ev_map = []
-    for ev_type in dict(enums['EventType']):
-        name = ev_type.split('_', 1)[1]
+    for ev_type in dict(enums["EventType"]):
+        name = ev_type.split("_", 1)[1]
         if name in MACRO_MAP:
-            ev_map.append('    EventType.{}: {}'.format(ev_type, MACRO_MAP[name]))
-    ev_map = '''EVENT_TYPE_MAP = {{\n{map}\n}}'''.format(map=',\n'.join(ev_map))
+            ev_map.append("    EventType.{}: {}".format(ev_type, MACRO_MAP[name]))
+    ev_map = """EVENT_TYPE_MAP = {{\n{map}\n}}""".format(map=",\n".join(ev_map))
 
-    print(TEMPLATE.format(version=uname,
-                          date=datetime.datetime.now(),
-                          enums_body=enums_body,
-                          event_type_map=ev_map,
-                          structs_body=structs_body))
+    print(
+        TEMPLATE.format(
+            version=uname,
+            date=datetime.datetime.now(),
+            enums_body=enums_body,
+            event_type_map=ev_map,
+            structs_body=structs_body,
+        )
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
