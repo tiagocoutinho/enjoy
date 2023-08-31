@@ -30,9 +30,9 @@ jobs:
         pip install -e .[dev]
     - name: Linting tests
       run: |
-        black --check --diff envoy tests examples
+        black --check --diff enjoy tests examples
         ruff check --diff --format=github --show-files .
-        vulture --min-confidence=80 envoy tests examples
+        vulture --min-confidence=80 enjoy tests examples
     - name: Build package
       run: |
         python -m build
