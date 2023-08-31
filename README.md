@@ -35,3 +35,7 @@ with pad:
 	    print(f"X:{abs.x:>3} | Y:{abs.y:>3} | RX:{abs.rx:>3} | RY:{abs.ry:>3}", end="\r", flush=True)
 	    time.sleep(0.1)
 ```
+
+## References
+
+* [Linux input subsystem userspace API (Latest)](https://www.kernel.org/doc/html/latest/input/input_uapi.html
