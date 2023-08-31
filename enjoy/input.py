@@ -414,7 +414,7 @@ class InputDevice(object):
         self._fileobj.open()
         return self
 
-    def __exit__(self, exc_type, exc_value, tb):
+    def __exit__(self, *_):
         self.close()
 
     def fileno(self):

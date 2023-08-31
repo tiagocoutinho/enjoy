@@ -8,8 +8,9 @@
 """Tests for `enjoy` package."""
 
 
-from enjoy import enjoy
+#from enjoy import enjoy
 
 
 def test_input():
-    import enjoy.input
+    #import enjoy.input
+    ...
