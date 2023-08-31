@@ -7,10 +7,12 @@
 
 """Tests for `enjoy` package."""
 
+from ward import test
 
 # from enjoy import enjoy
 
 
+@test("basic input")
 def test_input():
     # import enjoy.input
     ...
